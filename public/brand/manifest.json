@@ -1,0 +1,82 @@
+{
+  "source": "devart-variant\\vectors\\DEVART-04-jaw-aligned-white.svg",
+  "geometry": "Existing jaw-aligned artwork preserved; six rectangular clips flattened into a single portrait path. Letter outlines retained.",
+  "font": "Existing supplied outlines derived from Bahnschrift Condensed. No font file, live text, or font dependency is included.",
+  "assets": [
+    {
+      "file": "devart-logo-white.svg",
+      "viewBox": [
+        19.426,
+        16.5,
+        393.314,
+        550.042
+      ],
+      "bytes": 54010,
+      "color": "#FFFFFF"
+    },
+    {
+      "file": "devart-logo-black.svg",
+      "viewBox": [
+        19.426,
+        16.5,
+        393.314,
+        550.042
+      ],
+      "bytes": 54010,
+      "color": "#000000"
+    },
+    {
+      "file": "devart-portrait-white.svg",
+      "viewBox": [
+        19.426,
+        16.5,
+        393.314,
+        399.037
+      ],
+      "bytes": 52110,
+      "color": "#FFFFFF"
+    },
+    {
+      "file": "devart-portrait-black.svg",
+      "viewBox": [
+        19.426,
+        16.5,
+        393.314,
+        399.037
+      ],
+      "bytes": 52110,
+      "color": "#000000"
+    },
+    {
+      "file": "devart-wordmark-white.svg",
+      "viewBox": [
+        71.197,
+        423.387,
+        313.329,
+        143.155
+      ],
+      "bytes": 2203,
+      "color": "#FFFFFF"
+    },
+    {
+      "file": "devart-wordmark-black.svg",
+      "viewBox": [
+        71.197,
+        423.387,
+        313.329,
+        143.155
+      ],
+      "bytes": 2203,
+      "color": "#000000"
+    }
+  ],
+  "validation": {
+    "mask_overlap_at_860px": 0.997688,
+    "alpha_differences_of_128_or_more": 2,
+    "comparison_note": "Flattening removes duplicated edge antialiasing where the six original clipped paths overlapped; visible geometry is retained.",
+    "paths_only": true,
+    "raster_images": 0,
+    "external_dependencies": 0,
+    "transparent_background": true
+  }
+}
