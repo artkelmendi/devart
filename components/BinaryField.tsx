@@ -1,8 +1,19 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import {
+  makeBinaryForm,
+  MORPH_CYCLE,
+  MORPH_END,
+  MORPH_START,
+  sampleBinaryMorph,
+} from '@/lib/binary-forms';
 
-type BinaryFieldProps = { paused: boolean; pulse: number };
+type BinaryFieldProps = {
+  paused: boolean;
+  transform: number;
+  onTransformingChange: (active: boolean) => void;
+};
 type FieldPulse = { x: number; y: number; started: number };
 type Particle = {
   a: number;
@@ -54,12 +65,16 @@ function makeParticles(): Particle[] {
 }
 
 /** A quietly orbiting, deterministic data sculpture. No scene graph or WebGL. */
-export default function BinaryField({ paused, pulse }: BinaryFieldProps) {
+export default function BinaryField({
+  paused,
+  transform,
+  onTransformingChange,
+}: BinaryFieldProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const pausedRef = useRef(paused);
   const controllerRef = useRef<{
     setPaused: (value: boolean) => void;
-    sendPulse: () => void;
+    transform: () => void;
   } | null>(null);
 
   useEffect(() => {
@@ -68,8 +83,8 @@ export default function BinaryField({ paused, pulse }: BinaryFieldProps) {
   }, [paused]);
 
   useEffect(() => {
-    if (pulse > 0) controllerRef.current?.sendPulse();
-  }, [pulse]);
+    if (transform > 0) controllerRef.current?.transform();
+  }, [transform]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -80,6 +95,11 @@ export default function BinaryField({ paused, pulse }: BinaryFieldProps) {
     const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
     const coarseQuery = window.matchMedia('(pointer: coarse)');
     const particles = makeParticles();
+    const particleOrder = Array.from({ length: 800 }, (_, index) => index).sort(
+      (a, b) => particles[a].a - particles[b].a,
+    );
+    let wordForm = makeBinaryForm('ENGINEER', particleOrder);
+    let codeForm = makeBinaryForm('</>', particleOrder);
     const projected: ProjectedGlyph[] = [];
     const atlas = document.createElement('canvas');
     // Six pre-rasterized glyphs replace a thousand fillText calls per frame.
@@ -108,6 +128,13 @@ export default function BinaryField({ paused, pulse }: BinaryFieldProps) {
     let lastTimestamp = 0;
     let lastPaint = 0;
     let elapsed = 0;
+    let morphClock = 0;
+    let transforming = false;
+    let heroVisible = true;
+    let formX = 0;
+    let formY = 0;
+    let formWidth = 0;
+    let formMaxHeight = 150;
     let quality = 1;
     let frameSamples = 0;
     let frameCost = 0;
@@ -138,6 +165,18 @@ export default function BinaryField({ paused, pulse }: BinaryFieldProps) {
       !document.hidden &&
       !disposed &&
       fieldVisible;
+
+    function updateTransforming(active: boolean) {
+      if (transforming === active) return;
+      transforming = active;
+      onTransformingChange(active);
+    }
+
+    function transformField() {
+      if (!canAnimate() || !heroVisible || transforming) return;
+      morphClock = MORPH_START;
+      updateTransforming(true);
+    }
 
     const fieldGeometry = () => ({
       base: Math.min(width * (isSmall ? 0.46 : 0.223), height * 0.36),
@@ -216,22 +255,43 @@ export default function BinaryField({ paused, pulse }: BinaryFieldProps) {
         ? 1
         : 1 - Math.min(scroll / (height * 1.4), 1) * 0.66;
       const density = (isSmall ? 0.61 : 1) * quality;
+      const morphPhase = morphClock % MORPH_CYCLE;
+      const heroPresence = heroVisible
+        ? Math.max(0, 1 - scroll / (height * 0.65))
+        : 0;
+      const shapeVisible =
+        !reducedMotion &&
+        heroPresence > 0 &&
+        morphPhase >= MORPH_START &&
+        morphPhase < MORPH_END;
+      const wordWidth = Math.min(formWidth, formMaxHeight * wordForm.aspect);
+      const codeWidth = Math.min(
+        formWidth * 0.48,
+        formMaxHeight * codeForm.aspect,
+      );
       while (pulses.length && elapsed - pulses[0].started > 1.35)
         pulses.shift();
 
       for (let index = 0; index < particles.length; index += 1) {
         const particle = particles[index];
         // Stable culling retains the same sculpture as the adaptive budget changes.
-        if ((index * 0.61803398875) % 1 > density) continue;
+        const normallyVisible = (index * 0.61803398875) % 1 <= density;
+        if (!normallyVisible && !(shapeVisible && particle.group === 0))
+          continue;
         let x: number;
         let y: number;
         let z: number;
         let alpha: number;
         let glyphSize: number;
         let excitation = 0;
+        let formAmount = 0;
 
         if (particle.group === 0) {
           const angle = particle.a + flow * particle.speed;
+          const morph = shapeVisible
+            ? sampleBinaryMorph(morphClock - particle.depth * 0.3)
+            : { amount: 0, code: 0 };
+          formAmount = morph.amount * heroPresence;
           const tube = particle.b + Math.sin(angle * 2 + elapsed * 0.06) * 0.21;
           // A gently deformed torus creates open space at its core and a readable elliptical silhouette.
           const orbit = 0.8 + Math.cos(tube) * (0.13 + particle.radius * 0.15);
@@ -256,12 +316,12 @@ export default function BinaryField({ paused, pulse }: BinaryFieldProps) {
           glyphSize = (14 + depth * 8.5) * (isSmall ? 0.85 : 1);
 
           // A small local pressure field parts the digits without breaking the orbit.
-          if (focus > 0.001) {
+          if (focus > 0.001 && formAmount < 0.99) {
             const dx = x - focusX;
             const dy = y - focusY;
             const distance = Math.hypot(dx, dy);
             const proximity = Math.max(0, 1 - distance / influenceRadius);
-            const pressure = proximity * proximity * focus;
+            const pressure = proximity * proximity * focus * (1 - formAmount);
             const displacement = pressure * (12 + depth * 14);
             x += (dx / Math.max(distance, 1)) * displacement;
             y += (dy / Math.max(distance, 1)) * displacement;
@@ -277,7 +337,8 @@ export default function BinaryField({ paused, pulse }: BinaryFieldProps) {
             const distance = Math.hypot(dx, dy);
             const front = age * base * 2.35;
             const band = (distance - front) / (base * 0.17);
-            const strength = Math.exp(-band * band) * (1 - age / 1.35);
+            const strength =
+              Math.exp(-band * band) * (1 - age / 1.35) * (1 - formAmount);
             const displacement = strength * base * 0.095;
             x += (dx / Math.max(distance, 1)) * displacement;
             y += (dy / Math.max(distance, 1)) * displacement;
@@ -285,6 +346,37 @@ export default function BinaryField({ paused, pulse }: BinaryFieldProps) {
           }
           alpha += excitation * 0.32 * pageAttenuation;
           glyphSize *= 1 + excitation * 0.2;
+
+          if (formAmount > 0) {
+            const word = wordForm.points[index];
+            const code = codeForm.points[index];
+            const targetX =
+              formX +
+              word.x * wordWidth * (1 - morph.code) +
+              code.x * codeWidth * morph.code;
+            const targetY =
+              formY -
+              scroll +
+              word.y * (wordWidth / wordForm.aspect) * (1 - morph.code) +
+              code.y * (codeWidth / codeForm.aspect) * morph.code;
+            // A restrained arc opens the volume before the bits settle into type.
+            const arc = Math.sin(formAmount * Math.PI) * base * 0.09;
+            x +=
+              (targetX + pointerX * 3 - x) * formAmount +
+              Math.cos(particle.a) * arc;
+            y +=
+              (targetY + pointerY * 2 - y) * formAmount +
+              Math.sin(particle.a) * arc;
+            z += (particle.depth * 5 - z) * formAmount;
+            const targetSize =
+              Math.max(7, Math.min(13, wordWidth / 49)) * (1 - morph.code) +
+              Math.max(8, Math.min(17, codeWidth / 20)) * morph.code;
+            glyphSize += (targetSize - glyphSize) * formAmount;
+            alpha +=
+              ((0.72 + particle.depth * 0.18) * pageAttenuation - alpha) *
+              formAmount;
+          }
+          if (!normallyVisible) alpha *= formAmount;
         } else if (particle.group === 1) {
           // Two loose, sinuous lateral streams feed the central field. Never vertical rainfall.
           const progress =
@@ -330,9 +422,10 @@ export default function BinaryField({ paused, pulse }: BinaryFieldProps) {
         }
 
         // Quiet the main reading column and soften glyphs at the physical edges.
-        const readingMask = isSmall
+        const restingMask = isSmall
           ? 0.27
           : 0.36 + Math.min(Math.max((x / width - 0.36) / 0.24, 0), 1) * 0.64;
+        const readingMask = restingMask + (1 - restingMask) * formAmount;
         const edgeMask = Math.min(
           1,
           Math.max(0, x / 48),
@@ -398,6 +491,11 @@ export default function BinaryField({ paused, pulse }: BinaryFieldProps) {
         : 0;
       lastTimestamp = timestamp;
       elapsed += delta;
+      if (heroVisible && targetScroll < height * 0.5) {
+        morphClock += delta;
+        const phase = morphClock % MORPH_CYCLE;
+        updateTransforming(phase >= MORPH_START && phase < MORPH_END);
+      }
       const damping = 1 - Math.exp(-delta * 3.7);
       pointerX += (targetPointerX - pointerX) * damping;
       pointerY += (targetPointerY - pointerY) * damping;
@@ -434,6 +532,28 @@ export default function BinaryField({ paused, pulse }: BinaryFieldProps) {
       const hero = document.getElementById('top')?.getBoundingClientRect();
       heroTop = (hero?.top ?? 0) + window.scrollY;
       heroBottom = (hero?.bottom ?? 0) + window.scrollY;
+      const actions = document
+        .querySelector('.hero-actions')
+        ?.getBoundingClientRect();
+      const controls = document
+        .querySelector('.hero-bottom')
+        ?.getBoundingClientRect();
+      const gutter = Math.max(24, Math.min(100, width * 0.0555));
+      if (width < 1000 && actions && controls) {
+        const top = actions.bottom + window.scrollY + 25;
+        const bottom = controls.top + window.scrollY - 20;
+        formX = width / 2;
+        formY = (top + bottom) / 2;
+        formWidth = width - gutter * 2 - 8;
+        formMaxHeight = Math.max(24, bottom - top);
+      } else {
+        const left = width * 0.54;
+        const right = Math.min(width - gutter, (hero?.right ?? width) - gutter);
+        formX = (left + right) / 2;
+        formY = height * 0.49;
+        formWidth = right - left;
+        formMaxHeight = height * 0.25;
+      }
       releasePointer();
       const pixelBudget = Math.sqrt(3_000_000 / Math.max(1, width * height));
       dpr = Math.min(
@@ -518,6 +638,8 @@ export default function BinaryField({ paused, pulse }: BinaryFieldProps) {
       stop();
       if (reducedMotion) {
         clearInteraction();
+        morphClock = 0;
+        updateTransforming(false);
         scroll = targetScroll = 0;
         paint();
       } else {
@@ -527,7 +649,7 @@ export default function BinaryField({ paused, pulse }: BinaryFieldProps) {
     }
 
     controllerRef.current = {
-      sendPulse,
+      transform: transformField,
       setPaused(value) {
         isPaused = value;
         if (value) {
@@ -563,6 +685,8 @@ export default function BinaryField({ paused, pulse }: BinaryFieldProps) {
       entries.forEach((entry) =>
         visibleSections.set(entry.target, entry.isIntersecting),
       );
+      heroVisible =
+        visibleSections.get(document.getElementById('top')!) ?? false;
       fieldVisible = [...visibleSections.values()].some(Boolean);
       if (fieldVisible) {
         targetScroll = window.scrollY;
@@ -581,6 +705,13 @@ export default function BinaryField({ paused, pulse }: BinaryFieldProps) {
     });
     resize();
     start();
+    // Refresh only the precomputed masks after the local display font is ready.
+    void document.fonts.ready.then(() => {
+      if (disposed) return;
+      wordForm = makeBinaryForm('ENGINEER', particleOrder);
+      codeForm = makeBinaryForm('</>', particleOrder);
+      handleResize();
+    });
 
     return () => {
       disposed = true;
@@ -602,7 +733,7 @@ export default function BinaryField({ paused, pulse }: BinaryFieldProps) {
       document.removeEventListener('visibilitychange', handleVisibility);
       motionQuery.removeEventListener('change', handleMotionPreference);
     };
-  }, []);
+  }, [onTransformingChange]);
 
   return (
     <canvas

@@ -207,7 +207,8 @@ const practices = [
 
 export default function Home() {
   const [paused, setPaused] = useState(false);
-  const [pulse, setPulse] = useState(0);
+  const [transform, setTransform] = useState(0);
+  const [transforming, setTransforming] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
   useEffect(() => {
     const media = matchMedia('(prefers-reduced-motion: reduce)');
@@ -223,7 +224,11 @@ export default function Home() {
       <a className="skip-link" href="#main">
         Skip to content
       </a>
-      <BinaryField paused={paused} pulse={pulse} />
+      <BinaryField
+        paused={paused}
+        transform={transform}
+        onTransformingChange={setTransforming}
+      />
       <MotionSystem />
       <Navigation />
       <main id="main">
@@ -281,13 +286,13 @@ export default function Home() {
             </p>
             <div className="field-controls">
               <button
-                className="field-pulse"
-                disabled={paused || reducedMotion}
-                onClick={() => setPulse((value) => value + 1)}
-                aria-label="Send a pulse through the binary circle"
+                className="field-transform"
+                disabled={paused || reducedMotion || transforming}
+                onClick={() => setTransform((value) => value + 1)}
+                aria-label="Transform the binary circle into text and code"
               >
                 <span aria-hidden="true">+</span>
-                Send a pulse
+                {transforming ? 'Transforming' : 'Transform'}
               </button>
               <button
                 className="motion-toggle"
