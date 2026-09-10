@@ -2,56 +2,56 @@
 name: DEVART
 description: Software engineering expressed through precise typography and a quiet binary environment.
 colors:
-  near-black: "#0c0d0f"
-  panel: "#131517"
-  silver-white: "#eeefed"
-  muted-silver: "#989b9f"
-  warm-orange: "#eb8956"
-  hairline: "#ffffff1c"
+  near-black: '#0c0d0f'
+  panel: '#131517'
+  silver-white: '#eeefed'
+  muted-silver: '#989b9f'
+  warm-orange: '#eb8956'
+  hairline: '#ffffff1c'
 typography:
   display:
-    fontFamily: "Manrope, Arial, sans-serif"
-    fontSize: "clamp(108px, 14.7vw, 236px)"
+    fontFamily: 'Manrope, Arial, sans-serif'
+    fontSize: 'clamp(108px, 14.7vw, 236px)'
     fontWeight: 400
     lineHeight: 1.13
-    letterSpacing: "-0.04em"
+    letterSpacing: '-0.04em'
   headline:
-    fontFamily: "Manrope, Arial, sans-serif"
-    fontSize: "clamp(36px, 4.1vw, 62px)"
+    fontFamily: 'Manrope, Arial, sans-serif'
+    fontSize: 'clamp(36px, 4.1vw, 62px)'
     fontWeight: 400
     lineHeight: 1.1
-    letterSpacing: "-0.035em"
+    letterSpacing: '-0.035em'
   title:
-    fontFamily: "Manrope, Arial, sans-serif"
-    fontSize: "clamp(31px, 3vw, 46px)"
+    fontFamily: 'Manrope, Arial, sans-serif'
+    fontSize: 'clamp(31px, 3vw, 46px)'
     fontWeight: 400
     lineHeight: 1.15
-    letterSpacing: "-0.035em"
+    letterSpacing: '-0.035em'
   body:
-    fontFamily: "Geist, Arial, sans-serif"
-    fontSize: "16px"
+    fontFamily: 'Geist, Arial, sans-serif'
+    fontSize: '16px'
     fontWeight: 400
     lineHeight: 1.7
   label:
-    fontFamily: "Geist, Arial, sans-serif"
-    fontSize: "12px"
+    fontFamily: 'Geist, Arial, sans-serif'
+    fontSize: '12px'
     fontWeight: 400
 spacing:
-  gutter: "clamp(24px, 5.55vw, 100px)"
+  gutter: 'clamp(24px, 5.55vw, 100px)'
 components:
   button-primary:
-    backgroundColor: "{colors.silver-white}"
-    textColor: "#111315"
-    padding: "17px 23px"
+    backgroundColor: '{colors.silver-white}'
+    textColor: '#111315'
+    padding: '17px 23px'
   button-primary-hover:
-    backgroundColor: "#ffffff"
+    backgroundColor: '#ffffff'
   text-link:
-    textColor: "{colors.silver-white}"
+    textColor: '{colors.silver-white}'
   copy-button:
-    backgroundColor: "transparent"
-    textColor: "{colors.silver-white}"
-    height: "44px"
-    width: "44px"
+    backgroundColor: 'transparent'
+    textColor: '{colors.silver-white}'
+    height: '44px'
+    width: '44px'
 ---
 
 # Design System: devart.
@@ -107,9 +107,11 @@ Case metadata changes from three columns to two, with technologies spanning the 
 
 The interface uses flat surfaces and hairline borders. It does not use drop shadows, glass panels, or backdrop blur. Depth belongs to the decorative Canvas 2D field: a deterministic set of 1,020 zeroes and ones forms a deformed torus, two lateral streams, and sparse foreground fragments. Glyphs are depth-sorted, softly faded, and attenuated over the reading column and viewport edges. This is an orbiting sculpture, never vertical Matrix-style rain.
 
-Motion is time-based. Fine pointer movement produces damped depth offsets; touch movement does not drive parallax. Scroll supplies a small depth shift and progressively reduces contrast beyond the opening viewport. Opaque reading surfaces keep long-form content calm.
+Motion is time-based. Fine pointer movement produces damped depth offsets. Over the hero circle, the volume turns gently toward the pointer while nearby digits separate and brighten. Leaving the field returns it to its resting orbit. Touch movement does not drive parallax. Scroll supplies a small depth shift and progressively reduces contrast beyond the opening viewport. Opaque reading surfaces keep long-form content calm.
 
-The field pre-rasterizes its six glyph/color combinations, limits device pixel ratio and total raster pixels, lowers small-screen density, targets 30 frames per second on coarse pointers and 60 otherwise, and can reduce density when painting becomes expensive. Hidden documents stop the animation loop.
+A completed click or tap in the circle sends a brief displacement wave through its glyphs, with a restrained warm accent at the wavefront. The wave fades over 1.35 seconds; at most three can coexist. Text, links, and other controls are excluded, and a moved or cancelled pointer gesture does not create a pulse. The keyboard-accessible “Send a pulse” control provides the same interaction on desktop and mobile. It is disabled while motion is paused or reduced. No interaction captures the pointer or cancels native scrolling.
+
+The field pre-rasterizes its six glyph/color combinations, limits device pixel ratio and total raster pixels, lowers small-screen density, targets 30 frames per second on coarse pointers and 60 otherwise, and can reduce density when painting becomes expensive. Hidden documents and offscreen field sections stop the animation loop and discard transient interaction state. A user pause freezes the current frame and resumes it smoothly. Animation state stays inside the canvas controller without per-frame React updates or layout reads.
 
 ## Shapes
 

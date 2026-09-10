@@ -207,6 +207,7 @@ const practices = [
 
 export default function Home() {
   const [paused, setPaused] = useState(false);
+  const [pulse, setPulse] = useState(0);
   const [reducedMotion, setReducedMotion] = useState(false);
   useEffect(() => {
     const media = matchMedia('(prefers-reduced-motion: reduce)');
@@ -222,7 +223,7 @@ export default function Home() {
       <a className="skip-link" href="#main">
         Skip to content
       </a>
-      <BinaryField paused={paused} />
+      <BinaryField paused={paused} pulse={pulse} />
       <MotionSystem />
       <Navigation />
       <main id="main">
@@ -261,9 +262,9 @@ export default function Home() {
           <div className="field-annotation" aria-hidden="true">
             <span className="annotation-cross">+</span>
             <span>
-              Everything starts
+              Move through the field.
               <br />
-              with a little logic.
+              Click to send a pulse.
             </span>
           </div>
           <div className="hero-bottom">
@@ -278,32 +279,43 @@ export default function Home() {
               <br />
               <span>Craft in every detail.</span>
             </p>
-            <button
-              className="motion-toggle"
-              onClick={() => setPaused(!paused)}
-              aria-pressed={paused}
-              disabled={reducedMotion}
-              aria-label={
-                reducedMotion
-                  ? 'Motion reduced by system preference'
-                  : paused
-                    ? 'Resume background animation'
-                    : 'Pause background animation'
-              }
-            >
-              {paused || reducedMotion ? (
-                <Play size={12} />
-              ) : (
-                <Pause size={12} />
-              )}
-              <span>
-                {reducedMotion
-                  ? 'Reduced motion'
-                  : paused
-                    ? 'Motion paused'
-                    : 'Motion on'}
-              </span>
-            </button>
+            <div className="field-controls">
+              <button
+                className="field-pulse"
+                disabled={paused || reducedMotion}
+                onClick={() => setPulse((value) => value + 1)}
+                aria-label="Send a pulse through the binary circle"
+              >
+                <span aria-hidden="true">+</span>
+                Send a pulse
+              </button>
+              <button
+                className="motion-toggle"
+                onClick={() => setPaused(!paused)}
+                aria-pressed={paused}
+                disabled={reducedMotion}
+                aria-label={
+                  reducedMotion
+                    ? 'Motion reduced by system preference'
+                    : paused
+                      ? 'Resume background animation'
+                      : 'Pause background animation'
+                }
+              >
+                {paused || reducedMotion ? (
+                  <Play size={12} />
+                ) : (
+                  <Pause size={12} />
+                )}
+                <span>
+                  {reducedMotion
+                    ? 'Reduced motion'
+                    : paused
+                      ? 'Motion paused'
+                      : 'Motion on'}
+                </span>
+              </button>
+            </div>
           </div>
         </section>
 

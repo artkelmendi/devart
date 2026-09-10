@@ -2,7 +2,8 @@
 
 import { useEffect, useRef } from 'react';
 
-type BinaryFieldProps = { paused: boolean };
+type BinaryFieldProps = { paused: boolean; pulse: number };
+type FieldPulse = { x: number; y: number; started: number };
 type Particle = {
   a: number;
   b: number;
@@ -53,17 +54,22 @@ function makeParticles(): Particle[] {
 }
 
 /** A quietly orbiting, deterministic data sculpture. No scene graph or WebGL. */
-export default function BinaryField({ paused }: BinaryFieldProps) {
+export default function BinaryField({ paused, pulse }: BinaryFieldProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const pausedRef = useRef(paused);
-  const controllerRef = useRef<{ setPaused: (value: boolean) => void } | null>(
-    null,
-  );
+  const controllerRef = useRef<{
+    setPaused: (value: boolean) => void;
+    sendPulse: () => void;
+  } | null>(null);
 
   useEffect(() => {
     pausedRef.current = paused;
     controllerRef.current?.setPaused(paused);
   }, [paused]);
+
+  useEffect(() => {
+    if (pulse > 0) controllerRef.current?.sendPulse();
+  }, [pulse]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -110,6 +116,17 @@ export default function BinaryField({ paused }: BinaryFieldProps) {
     let pointerY = 0;
     let targetPointerX = 0;
     let targetPointerY = 0;
+    let focusX = 0;
+    let focusY = 0;
+    let targetFocusX = 0;
+    let targetFocusY = 0;
+    let focus = 0;
+    let targetFocus = 0;
+    const pulses: FieldPulse[] = [];
+    let tap: { id: number; x: number; y: number; started: number } | null =
+      null;
+    let heroTop = 0;
+    let heroBottom = 0;
     let scroll = reducedMotion ? 0 : window.scrollY;
     let targetScroll = scroll;
     let disposed = false;
@@ -122,6 +139,55 @@ export default function BinaryField({ paused }: BinaryFieldProps) {
       !disposed &&
       fieldVisible;
 
+    const fieldGeometry = () => ({
+      base: Math.min(width * (isSmall ? 0.46 : 0.223), height * 0.36),
+      x: width * (isSmall ? 0.88 : 0.785),
+      y: height * (isSmall ? 0.47 : 0.49),
+    });
+
+    function overField(x: number, y: number, target: EventTarget | null) {
+      if (!(target instanceof Element) || !target.closest('#top')) return false;
+      if (
+        target.closest(
+          'a, button, input, textarea, select, [role="button"], .hero-content',
+        )
+      )
+        return false;
+      if (y + window.scrollY < heroTop || y + window.scrollY > heroBottom)
+        return false;
+      const geometry = fieldGeometry();
+      return (
+        x > width * (isSmall ? 0.5 : 0.53) &&
+        Math.hypot(
+          (x - geometry.x) / (geometry.base * 1.3),
+          (y - geometry.y) / (geometry.base * 1.2),
+        ) < 1
+      );
+    }
+
+    function sendPulse(x?: number, y?: number) {
+      if (!canAnimate()) return;
+      const geometry = fieldGeometry();
+      // Store viewport-relative origins so an in-flight pulse survives resize.
+      pulses.push({
+        x: (x ?? geometry.x - geometry.base * 0.6) / width,
+        y: (y ?? geometry.y - geometry.base * 0.45) / height,
+        started: elapsed,
+      });
+      if (pulses.length > 3) pulses.shift();
+    }
+
+    function releasePointer() {
+      targetPointerX = targetPointerY = targetFocus = 0;
+      tap = null;
+    }
+
+    function clearInteraction() {
+      releasePointer();
+      pointerX = pointerY = focus = 0;
+      pulses.length = 0;
+    }
+
     function paint() {
       if (!context) return;
       const started = performance.now();
@@ -129,17 +195,20 @@ export default function BinaryField({ paused }: BinaryFieldProps) {
       context.clearRect(0, 0, width, height);
       projected.length = 0;
 
-      const base = Math.min(width * (isSmall ? 0.46 : 0.223), height * 0.36);
-      const centerX = width * (isSmall ? 0.88 : 0.785);
-      const centerY = height * (isSmall ? 0.47 : 0.49);
+      const { base, x: centerX, y: centerY } = fieldGeometry();
+      const leanX =
+        Math.max(-1, Math.min(1, (focusX - centerX) / base)) * focus;
+      const leanY =
+        Math.max(-1, Math.min(1, (focusY - centerY) / base)) * focus;
+      const influenceRadius = Math.min(145, base * 0.55);
       const flow = elapsed * 0.027;
       const tilt = -0.36 + Math.sin(elapsed * 0.043) * 0.025;
       const sinTilt = Math.sin(tilt);
       const cosTilt = Math.cos(tilt);
-      const yaw = 0.69 + Math.sin(elapsed * 0.035) * 0.07;
+      const yaw = 0.69 + Math.sin(elapsed * 0.035) * 0.07 + leanX * 0.22;
       const sinYaw = Math.sin(yaw);
       const cosYaw = Math.cos(yaw);
-      const pitch = 0.47;
+      const pitch = 0.47 - leanY * 0.16;
       const sinPitch = Math.sin(pitch);
       const cosPitch = Math.cos(pitch);
       // The environment loses contrast beyond the opening viewport, keeping long-form content quiet.
@@ -147,6 +216,8 @@ export default function BinaryField({ paused }: BinaryFieldProps) {
         ? 1
         : 1 - Math.min(scroll / (height * 1.4), 1) * 0.66;
       const density = (isSmall ? 0.61 : 1) * quality;
+      while (pulses.length && elapsed - pulses[0].started > 1.35)
+        pulses.shift();
 
       for (let index = 0; index < particles.length; index += 1) {
         const particle = particles[index];
@@ -157,6 +228,7 @@ export default function BinaryField({ paused }: BinaryFieldProps) {
         let z: number;
         let alpha: number;
         let glyphSize: number;
+        let excitation = 0;
 
         if (particle.group === 0) {
           const angle = particle.a + flow * particle.speed;
@@ -182,6 +254,37 @@ export default function BinaryField({ paused }: BinaryFieldProps) {
           const fade = 0.64 + Math.sin(elapsed * 0.26 + particle.phase) * 0.23;
           alpha = (0.16 + depth * 0.61) * fade * pageAttenuation;
           glyphSize = (14 + depth * 8.5) * (isSmall ? 0.85 : 1);
+
+          // A small local pressure field parts the digits without breaking the orbit.
+          if (focus > 0.001) {
+            const dx = x - focusX;
+            const dy = y - focusY;
+            const distance = Math.hypot(dx, dy);
+            const proximity = Math.max(0, 1 - distance / influenceRadius);
+            const pressure = proximity * proximity * focus;
+            const displacement = pressure * (12 + depth * 14);
+            x += (dx / Math.max(distance, 1)) * displacement;
+            y += (dy / Math.max(distance, 1)) * displacement;
+            alpha += pressure * 0.23 * pageAttenuation;
+            glyphSize *= 1 + pressure * 0.17;
+          }
+
+          // The wave is carried by the glyphs themselves; no extra ring or glow.
+          for (const wave of pulses) {
+            const age = elapsed - wave.started;
+            const dx = x - wave.x * width;
+            const dy = y - wave.y * height;
+            const distance = Math.hypot(dx, dy);
+            const front = age * base * 2.35;
+            const band = (distance - front) / (base * 0.17);
+            const strength = Math.exp(-band * band) * (1 - age / 1.35);
+            const displacement = strength * base * 0.095;
+            x += (dx / Math.max(distance, 1)) * displacement;
+            y += (dy / Math.max(distance, 1)) * displacement;
+            excitation = Math.max(excitation, strength);
+          }
+          alpha += excitation * 0.32 * pageAttenuation;
+          glyphSize *= 1 + excitation * 0.2;
         } else if (particle.group === 1) {
           // Two loose, sinuous lateral streams feed the central field. Never vertical rainfall.
           const progress =
@@ -253,7 +356,7 @@ export default function BinaryField({ paused }: BinaryFieldProps) {
           size: glyphSize,
           alpha,
           glyph: particle.glyph,
-          palette: particle.amber ? 2 : z > 0 ? 1 : 0,
+          palette: particle.amber || excitation > 0.48 ? 2 : z > 0 ? 1 : 0,
         });
       }
 
@@ -298,6 +401,10 @@ export default function BinaryField({ paused }: BinaryFieldProps) {
       const damping = 1 - Math.exp(-delta * 3.7);
       pointerX += (targetPointerX - pointerX) * damping;
       pointerY += (targetPointerY - pointerY) * damping;
+      const focusDamping = 1 - Math.exp(-delta * 9);
+      focusX += (targetFocusX - focusX) * focusDamping;
+      focusY += (targetFocusY - focusY) * focusDamping;
+      focus += (targetFocus - focus) * (1 - Math.exp(-delta * 5));
       scroll += (targetScroll - scroll) * (1 - Math.exp(-delta * 5));
       // Coarse pointers benefit from a lower power budget; animation speed remains time-based.
       if (timestamp - lastPaint >= 1000 / (coarseQuery.matches ? 30 : 60) - 1) {
@@ -324,6 +431,10 @@ export default function BinaryField({ paused }: BinaryFieldProps) {
       width = window.innerWidth;
       height = window.innerHeight;
       isSmall = width < 760;
+      const hero = document.getElementById('top')?.getBoundingClientRect();
+      heroTop = (hero?.top ?? 0) + window.scrollY;
+      heroBottom = (hero?.bottom ?? 0) + window.scrollY;
+      releasePointer();
       const pixelBudget = Math.sqrt(3_000_000 / Math.max(1, width * height));
       dpr = Math.min(
         window.devicePixelRatio || 1,
@@ -344,25 +455,59 @@ export default function BinaryField({ paused }: BinaryFieldProps) {
     }
 
     function handlePointer(event: PointerEvent) {
+      if (tap && Math.hypot(event.clientX - tap.x, event.clientY - tap.y) > 10)
+        tap = null;
       if (!canAnimate() || event.pointerType === 'touch') return;
       targetPointerX = (event.clientX / width - 0.5) * 2;
       targetPointerY = (event.clientY / height - 0.5) * 2;
+      targetFocusX = event.clientX;
+      targetFocusY = event.clientY;
+      targetFocus = overField(event.clientX, event.clientY, event.target)
+        ? 1
+        : 0;
     }
 
     function handlePointerLeave() {
-      if (!canAnimate()) return;
-      targetPointerX = 0;
-      targetPointerY = 0;
+      releasePointer();
+    }
+
+    function handlePointerDown(event: PointerEvent) {
+      if (!canAnimate() || !event.isPrimary || event.button !== 0) return;
+      if (!overField(event.clientX, event.clientY, event.target)) return;
+      tap = {
+        id: event.pointerId,
+        x: event.clientX,
+        y: event.clientY,
+        started: performance.now(),
+      };
+    }
+
+    function handlePointerUp(event: PointerEvent) {
+      const completed = tap;
+      tap = null;
+      if (
+        !completed ||
+        completed.id !== event.pointerId ||
+        performance.now() - completed.started > 600 ||
+        Math.hypot(event.clientX - completed.x, event.clientY - completed.y) >
+          10
+      )
+        return;
+      if (overField(event.clientX, event.clientY, event.target))
+        sendPulse(event.clientX, event.clientY);
     }
 
     function handleScroll() {
+      releasePointer();
       if (!canAnimate()) return;
       targetScroll = window.scrollY;
     }
 
     function handleVisibility() {
-      if (document.hidden) stop();
-      else {
+      if (document.hidden) {
+        clearInteraction();
+        stop();
+      } else {
         targetScroll = window.scrollY;
         start();
       }
@@ -372,7 +517,7 @@ export default function BinaryField({ paused }: BinaryFieldProps) {
       reducedMotion = motionQuery.matches;
       stop();
       if (reducedMotion) {
-        pointerX = pointerY = targetPointerX = targetPointerY = 0;
+        clearInteraction();
         scroll = targetScroll = 0;
         paint();
       } else {
@@ -382,10 +527,13 @@ export default function BinaryField({ paused }: BinaryFieldProps) {
     }
 
     controllerRef.current = {
+      sendPulse,
       setPaused(value) {
         isPaused = value;
-        if (value) stop();
-        else {
+        if (value) {
+          releasePointer();
+          stop();
+        } else {
           targetScroll = window.scrollY;
           start();
         }
@@ -394,6 +542,14 @@ export default function BinaryField({ paused }: BinaryFieldProps) {
 
     window.addEventListener('resize', handleResize, { passive: true });
     window.addEventListener('pointermove', handlePointer, { passive: true });
+    window.addEventListener('pointerdown', handlePointerDown, {
+      passive: true,
+    });
+    window.addEventListener('pointerup', handlePointerUp, { passive: true });
+    window.addEventListener('pointercancel', handlePointerLeave, {
+      passive: true,
+    });
+    window.addEventListener('blur', handlePointerLeave);
     document.documentElement.addEventListener(
       'pointerleave',
       handlePointerLeave,
@@ -411,7 +567,10 @@ export default function BinaryField({ paused }: BinaryFieldProps) {
       if (fieldVisible) {
         targetScroll = window.scrollY;
         start();
-      } else stop();
+      } else {
+        clearInteraction();
+        stop();
+      }
     });
     ['top', 'contact'].forEach((id) => {
       const section = document.getElementById(id);
@@ -431,6 +590,10 @@ export default function BinaryField({ paused }: BinaryFieldProps) {
       controllerRef.current = null;
       window.removeEventListener('resize', handleResize);
       window.removeEventListener('pointermove', handlePointer);
+      window.removeEventListener('pointerdown', handlePointerDown);
+      window.removeEventListener('pointerup', handlePointerUp);
+      window.removeEventListener('pointercancel', handlePointerLeave);
+      window.removeEventListener('blur', handlePointerLeave);
       document.documentElement.removeEventListener(
         'pointerleave',
         handlePointerLeave,
