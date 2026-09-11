@@ -9,6 +9,10 @@ colors:
   warm-orange: '#eb8956'
   hairline: '#ffffff1c'
 typography:
+  identity:
+    fontFamily: "'SFMono-Regular', Consolas, 'Liberation Mono', monospace"
+    fontWeight: 400
+    letterSpacing: '-0.065em'
   display:
     fontFamily: 'Manrope, Arial, sans-serif'
     fontSize: 'clamp(108px, 14.7vw, 236px)'
@@ -62,7 +66,7 @@ components:
 
 devart. is Art Kelmendi’s software engineering identity. The implementation uses a near-black canvas, silver typography, restrained warm orange accents, and an orbiting field of binary digits. Large identity typography introduces the engineer; concrete systems, testing, telecom, and frontend work provide the evidence.
 
-The primary mark is lowercase **devart.**, set in Manrope with **dev at 400**, **art at 700**, and a warm-orange terminal period. The same construction appears in the hero, navigation, footer, project pages, and the stacked About mark.
+The primary mark is lowercase **devart.**, set in a system terminal monospace with **dev at 400**, **art at 700**, and a warm-orange terminal period. The period is optically pulled into the final `t` by `-0.22em` to counter the empty side-bearing of a monospace punctuation cell. The same construction appears in the hero, navigation, footer, project pages, and the stacked About mark.
 
 **Key Characteristics:**
 
@@ -87,7 +91,7 @@ Binary glyphs use cool silver (`#afb7bd`), brighter silver (`#e0e6e5`), and spar
 
 ## Typography
 
-Manrope shapes the identity and major headings. Geist carries body copy, navigation, controls, and labels. Both are served as local TTF assets with `font-display: swap`. Manrope has actual 400 and 700 files; Geist has 400 and a 500 asset mapped to the 500–600 range. The binary canvas uses a system monospace stack headed by SFMono-Regular and Consolas.
+The identity uses a terminal monospace stack headed by SFMono-Regular and Consolas, while Manrope continues to shape major headings. Geist carries body copy, navigation, controls, and labels. Manrope and Geist are served as local TTF assets with `font-display: swap`; the wordmark uses the platform stack with compatible fallbacks and no additional download. Manrope has actual 400 and 700 files; Geist has 400 and a 500 asset mapped to the 500–600 range. The binary canvas uses the same system monospace family.
 
 The hero combines the lowercase display mark and terminal period with a spaced uppercase “SOFTWARE ENGINEER” label (`18–29px`, tracking `.15em`) and a small solid orange square. The label resolves as one measured typographic unit instead of imitating a terminal typing effect. Hero description copy is `18px/1.65`; normal supporting prose is generally `14–18px/1.7–1.8`. Project summary measure is capped at `360px`; About prose at `465px`; case-study prose at `710px`.
 
@@ -135,7 +139,7 @@ Controls, previews, and content surfaces use square corners. Circular shapes are
 
 ## Do's and Don'ts
 
-- Keep **devart.** lowercase in the primary identity, preserving dev 400 / art 700 and the orange terminal period.
+- Keep **devart.** lowercase in the primary identity, preserving the terminal monospace skeleton, dev 400 / art 700 contrast, and the closely spaced orange period.
 - Lead with software engineering and support it with C/C++, test engineering, telecom validation, and real project details.
 - Keep body copy readable over a quiet background and preserve keyboard-visible actions.
 - Use warm orange sparingly for orientation, emphasis, and feedback.

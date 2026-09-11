@@ -125,6 +125,10 @@ img {
 .brand-period {
   color: var(--accent);
 }
+.brand-period {
+  display: inline-block;
+  margin-left: -0.22em;
+}
 .skip-link {
   position: fixed;
   top: 15px;
@@ -193,8 +197,8 @@ main,
   background: var(--bg);
 }
 .wordmark {
-  font-family: Manrope, Arial, sans-serif;
-  letter-spacing: -0.035em;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
+  letter-spacing: -0.065em;
   font-weight: 400;
   display: inline-flex;
   align-items: baseline;
@@ -203,7 +207,7 @@ main,
   font-weight: 700;
 }
 .wordmark .brand-period {
-  margin-left: 1px;
+  margin-left: -0.22em;
 }
 .site-header {
   z-index: 30;
@@ -305,9 +309,9 @@ main,
   pointer-events: auto;
 }
 .hero-wordmark {
-  font-family: Manrope, Arial, sans-serif;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
   font-size: clamp(108px, 14.7vw, 236px);
-  letter-spacing: -0.035em;
+  letter-spacing: -0.065em;
   line-height: 1;
   font-weight: 400;
   display: flex;
@@ -322,7 +326,7 @@ main,
 .hero-wordmark .brand-period {
   color: var(--accent);
   font-weight: 700;
-  margin-left: 0.005em;
+  margin-left: -0.22em;
 }
 .hero-wordmark .brand-part {
   display: inline-block;
@@ -780,9 +784,9 @@ main,
   margin-top: 15px;
 }
 .about-mark {
-  font-family: Manrope, Arial, sans-serif;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
   font-size: clamp(85px, 10vw, 150px);
-  letter-spacing: -0.04em;
+  letter-spacing: -0.065em;
   line-height: 0.88;
   margin-top: 65px;
   width: max-content;
@@ -961,10 +965,10 @@ main,
   gap: 25px;
 }
 .case-signature {
-  font-family: Manrope, Arial, sans-serif;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
   font-size: 25px;
   font-weight: 400;
-  letter-spacing: -0.04em;
+  letter-spacing: -0.065em;
 }
 .case-signature strong {
   font-weight: 700;

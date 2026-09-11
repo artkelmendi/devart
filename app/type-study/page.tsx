@@ -19,9 +19,9 @@ const directions: Direction[] = [
     id: 'geometric',
     name: 'Geometric',
     character: 'Precise · balanced · premium',
-    note: 'The current direction. Calm enough for engineering work, with the weight shift giving ART a quiet signature.',
+    note: 'The original direction. Calm enough for engineering work, with the weight shift giving ART a quiet signature.',
     className: styles.geometric,
-    verdict: 'Best all-round fit',
+    verdict: 'Original direction',
   },
   {
     id: 'grotesk',
@@ -53,7 +53,7 @@ const directions: Direction[] = [
     character: 'Code-led · rigorous · utilitarian',
     note: 'A literal developer voice. Credible and clear, though less premium and less distinctive as a main identity.',
     className: styles.terminal,
-    verdict: 'Most developer-coded',
+    verdict: 'Selected direction',
   },
   {
     id: 'editorial',
@@ -79,7 +79,7 @@ function Wordmark({ direction }: { direction: Direction }) {
 }
 
 export default function TypeStudyPage() {
-  const [selectedId, setSelectedId] = useState('geometric');
+  const [selectedId, setSelectedId] = useState('terminal');
   const selected =
     directions.find((direction) => direction.id === selectedId) ??
     directions[0];
@@ -152,8 +152,7 @@ export default function TypeStudyPage() {
 
       <footer className={styles.footer}>
         <p>
-          Selecting here is only a preview. Your live portfolio has not been
-          changed.
+          The Terminal direction is now selected for the portfolio identity.
         </p>
         <Link href="/">
           Return to devart.
