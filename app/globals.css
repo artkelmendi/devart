@@ -127,7 +127,7 @@ img {
 }
 .brand-period {
   display: inline-block;
-  margin-left: -0.22em;
+  margin-left: -0.1em;
 }
 .skip-link {
   position: fixed;
@@ -207,7 +207,7 @@ main,
   font-weight: 700;
 }
 .wordmark .brand-period {
-  margin-left: -0.22em;
+  margin-left: -0.1em;
 }
 .site-header {
   z-index: 30;
@@ -326,7 +326,7 @@ main,
 .hero-wordmark .brand-period {
   color: var(--accent);
   font-weight: 700;
-  margin-left: -0.22em;
+  margin-left: -0.1em;
 }
 .hero-wordmark .brand-part {
   display: inline-block;

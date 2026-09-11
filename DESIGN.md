@@ -66,7 +66,7 @@ components:
 
 devart. is Art Kelmendi’s software engineering identity. The implementation uses a near-black canvas, silver typography, restrained warm orange accents, and an orbiting field of binary digits. Large identity typography introduces the engineer; concrete systems, testing, telecom, and frontend work provide the evidence.
 
-The primary mark is lowercase **devart.**, set in a system terminal monospace with **dev at 400**, **art at 700**, and a warm-orange terminal period. The period is optically pulled into the final `t` by `-0.22em` to counter the empty side-bearing of a monospace punctuation cell. The same construction appears in the hero, navigation, footer, project pages, and the stacked About mark.
+The primary mark is lowercase **devart.**, set in a system terminal monospace with **dev at 400**, **art at 700**, and a warm-orange terminal period. The period is optically pulled toward the final `t` by `-0.1em`, reducing the empty side-bearing of a monospace punctuation cell while preserving a clear gap. The same construction appears in the hero, navigation, footer, project pages, and the stacked About mark.
 
 **Key Characteristics:**
 
