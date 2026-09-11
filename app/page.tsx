@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import BinaryField from '@/components/BinaryField';
 import MotionSystem from '@/components/MotionSystem';
+import HeroIdentity from '@/components/HeroIdentity';
 import { projects } from '@/lib/projects';
 
 const navigation = [
@@ -32,18 +33,6 @@ function Wordmark() {
       <strong>art</strong>
       <span className="brand-period">.</span>
     </span>
-  );
-}
-
-function EntryShutter() {
-  return (
-    <div className="entry-shutter" aria-hidden="true">
-      <div className="entry-sequence">
-        <span className="entry-code">0101 / SYSTEM READY</span>
-        <Wordmark />
-      </div>
-      <span className="entry-scan" />
-    </div>
   );
 }
 
@@ -209,6 +198,7 @@ export default function Home() {
   const [paused, setPaused] = useState(false);
   const [transform, setTransform] = useState(0);
   const [transforming, setTransforming] = useState(false);
+  const [identitySignal, setIdentitySignal] = useState(0);
   const [reducedMotion, setReducedMotion] = useState(false);
   useEffect(() => {
     const media = matchMedia('(prefers-reduced-motion: reduce)');
@@ -220,7 +210,6 @@ export default function Home() {
 
   return (
     <>
-      <EntryShutter />
       <a className="skip-link" href="#main">
         Skip to content
       </a>
@@ -228,6 +217,7 @@ export default function Home() {
         paused={paused}
         transform={transform}
         onTransformingChange={setTransforming}
+        signal={identitySignal}
       />
       <MotionSystem />
       <Navigation />
@@ -238,11 +228,10 @@ export default function Home() {
           aria-labelledby="hero-title"
         >
           <div className="hero-content">
-            <h1 id="hero-title" className="hero-wordmark" aria-label="devart.">
-              <span className="brand-part">dev</span>
-              <strong className="brand-part">art</strong>
-              <span className="brand-part brand-period">.</span>
-            </h1>
+            <HeroIdentity
+              paused={paused}
+              onResolve={() => setIdentitySignal((value) => value + 1)}
+            />
             <p className="hero-role">
               SOFTWARE ENGINEER
               <span className="role-cursor" aria-hidden="true" />
@@ -279,10 +268,11 @@ export default function Home() {
               </span>
               Scroll to explore
             </a>
-            <p>
-              Engineering at the core.
-              <br />
-              <span>Craft in every detail.</span>
+            <p className="hero-expertise">
+              <span className="hero-expertise-domains">
+                C / C++ <i /> 5G systems <i /> Web applications
+              </span>
+              <span>From the system to the screen.</span>
             </p>
             <div className="field-controls">
               <button
@@ -303,8 +293,8 @@ export default function Home() {
                   reducedMotion
                     ? 'Motion reduced by system preference'
                     : paused
-                      ? 'Resume background animation'
-                      : 'Pause background animation'
+                      ? 'Resume animation'
+                      : 'Pause animation'
                 }
               >
                 {paused || reducedMotion ? (

@@ -22,82 +22,56 @@ export default function MotionSystem({ scope = 'home' }: MotionSystemProps) {
           const ease = 'power4.out';
 
           if (scope === 'home') {
-            const intro = gsap.timeline({ delay: 0.86 });
+            const intro = gsap.timeline();
             intro
               .fromTo(
                 '.site-header > *',
                 {
-                  opacity: 0,
-                  filter: 'blur(8px)',
+                  opacity: 0.35,
                   clipPath: 'inset(0 100% 0 0)',
                 },
                 {
                   opacity: 1,
-                  filter: 'blur(0px)',
                   clipPath: 'inset(0 0% 0 0)',
-                  duration: 0.65,
+                  duration: 0.55,
                   stagger: 0.055,
                   ease,
                 },
               )
               .fromTo(
-                '.hero-wordmark .brand-part',
-                {
-                  opacity: 0,
-                  filter: 'blur(14px)',
-                  clipPath: 'inset(100% 0 0 0)',
-                  rotateX: -72,
-                  transformOrigin: '50% 100%',
-                },
-                {
-                  opacity: 1,
-                  filter: 'blur(0px)',
-                  clipPath: 'inset(0% 0 0 0)',
-                  rotateX: 0,
-                  duration: 0.9,
-                  stagger: 0.085,
-                  ease,
-                },
-                '-=0.42',
-              )
-              .fromTo(
                 '.binary-field',
-                { opacity: 0, filter: 'blur(18px)', scale: 1.055 },
+                { opacity: 0.15, scale: 0.94 },
                 {
                   opacity: 1,
-                  filter: 'blur(0px)',
                   scale: 1,
-                  duration: 1.15,
+                  duration: 1.8,
                   ease,
                 },
-                '-=0.82',
+                0.1,
               )
               .fromTo(
                 '.hero-role',
-                { clipPath: 'inset(0 100% 0 0)', letterSpacing: '0.32em' },
+                { clipPath: 'inset(0 100% 0 0)' },
                 {
                   clipPath: 'inset(0 0% 0 0)',
-                  letterSpacing: '0.15em',
                   duration: 0.7,
                   ease,
                 },
-                '-=0.56',
+                0.65,
               )
               .fromTo(
                 '.hero-description',
                 {
                   opacity: 0,
-                  filter: 'blur(10px)',
                   clipPath: 'inset(0 0 100% 0)',
                 },
                 {
                   opacity: 1,
-                  filter: 'blur(0px)',
                   clipPath: 'inset(0 0 0% 0)',
                   duration: 0.68,
                   ease,
                 },
-                '-=0.45',
+                0.95,
               )
               .fromTo(
                 '.hero-actions > *',
@@ -109,20 +83,21 @@ export default function MotionSystem({ scope = 'home' }: MotionSystemProps) {
                   stagger: 0.09,
                   ease,
                 },
-                '-=0.42',
+                1.15,
               )
               .fromTo(
                 '.field-annotation, .hero-bottom > *',
-                { opacity: 0, filter: 'blur(6px)' },
+                { opacity: 0 },
                 {
                   opacity: 1,
-                  filter: 'blur(0px)',
                   duration: 0.5,
                   stagger: 0.06,
                   ease,
                 },
-                '-=0.3',
+                1.35,
               );
+
+            if (window.scrollY > window.innerHeight * 0.5) intro.progress(1);
 
             gsap.fromTo(
               '.section-heading > *',
@@ -499,8 +474,16 @@ export default function MotionSystem({ scope = 'home' }: MotionSystemProps) {
         document.documentElement.classList.remove('motion-enhanced');
       });
 
+    const handlePreference = () => {
+      if (!reduceMotion.matches) return;
+      disposed = true;
+      cleanup?.();
+    };
+    reduceMotion.addEventListener('change', handlePreference);
+
     return () => {
       disposed = true;
+      reduceMotion.removeEventListener('change', handlePreference);
       cleanup?.();
     };
   }, [scope]);

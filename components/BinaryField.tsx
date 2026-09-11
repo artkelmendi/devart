@@ -12,6 +12,7 @@ import {
 type BinaryFieldProps = {
   paused: boolean;
   transform: number;
+  signal: number;
   onTransformingChange: (active: boolean) => void;
 };
 type FieldPulse = { x: number; y: number; started: number };
@@ -68,6 +69,7 @@ function makeParticles(): Particle[] {
 export default function BinaryField({
   paused,
   transform,
+  signal,
   onTransformingChange,
 }: BinaryFieldProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -75,6 +77,7 @@ export default function BinaryField({
   const controllerRef = useRef<{
     setPaused: (value: boolean) => void;
     transform: () => void;
+    signal: () => void;
   } | null>(null);
 
   useEffect(() => {
@@ -85,6 +88,10 @@ export default function BinaryField({
   useEffect(() => {
     if (transform > 0) controllerRef.current?.transform();
   }, [transform]);
+
+  useEffect(() => {
+    if (signal > 0) controllerRef.current?.signal();
+  }, [signal]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -650,6 +657,9 @@ export default function BinaryField({
 
     controllerRef.current = {
       transform: transformField,
+      signal: () => {
+        if (heroVisible && canAnimate()) sendPulse();
+      },
       setPaused(value) {
         isPaused = value;
         if (value) {

@@ -142,43 +142,6 @@ img {
 .skip-link:focus {
   transform: translateY(0);
 }
-.entry-shutter {
-  position: fixed;
-  inset: 0;
-  z-index: 200;
-  display: grid;
-  place-items: center;
-  overflow: hidden;
-  pointer-events: none;
-  background: var(--bg);
-  animation: shutter-release 0.82s 0.72s var(--ease) forwards;
-}
-.entry-sequence {
-  display: grid;
-  justify-items: center;
-  gap: 13px;
-  animation: entry-mark-resolve 0.62s 0.08s var(--ease) both;
-}
-.entry-sequence .wordmark {
-  font-size: clamp(44px, 5.5vw, 76px);
-}
-.entry-code {
-  font-family: Consolas, monospace;
-  font-size: 10px;
-  letter-spacing: 0.18em;
-  color: var(--muted);
-  animation: entry-code-resolve 0.55s 0.12s steps(5, end) both;
-}
-.entry-scan {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 50%;
-  width: 1px;
-  background: var(--accent);
-  opacity: 0;
-  animation: entry-scan 0.68s 0.18s var(--ease) both;
-}
 .binary-field {
   position: fixed;
   inset: 0;
@@ -304,6 +267,7 @@ main,
   pointer-events: none;
 }
 .hero-content a,
+.hero-content button,
 .hero-content h1,
 .hero-content > p {
   pointer-events: auto;
@@ -328,8 +292,104 @@ main,
   font-weight: 700;
   margin-left: -0.1em;
 }
-.hero-wordmark .brand-part {
+.hero-identity {
+  position: relative;
+  width: max-content;
+  max-width: 100%;
+}
+.identity-glyph {
+  position: relative;
   display: inline-block;
+}
+.identity-art {
+  font-weight: 700;
+}
+.glyph-face {
+  position: relative;
+}
+.glyph-slice,
+.glyph-code {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  user-select: none;
+}
+.glyph-slice-0 {
+  clip-path: inset(0 0 72%);
+}
+.glyph-slice-1 {
+  clip-path: inset(28% 0 50%);
+}
+.glyph-slice-2 {
+  clip-path: inset(50% 0 30%);
+}
+.glyph-slice-3 {
+  clip-path: inset(70% 0 0);
+}
+.glyph-code {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.14em;
+  font-weight: 400;
+  letter-spacing: -0.05em;
+  color: var(--accent);
+  overflow-wrap: anywhere;
+  word-break: break-all;
+  padding: 0.5em;
+  line-height: 1.5;
+}
+.identity-scan {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0.09em;
+  height: 1px;
+  background: var(--accent);
+  transform-origin: left;
+  opacity: 0;
+}
+.identity-replay {
+  position: absolute;
+  right: -46px;
+  bottom: 15%;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  opacity: 0.65;
+  transition:
+    color 0.2s,
+    opacity 0.2s;
+}
+.identity-replay:hover,
+.identity-replay:focus-visible {
+  color: var(--accent);
+  opacity: 1;
+}
+.identity-replay:disabled {
+  opacity: 0.2;
+}
+.hero-expertise-domains {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
+.hero-bottom > .hero-expertise {
+  margin-right: auto;
+  margin-left: auto;
+}
+.hero-bottom .hero-expertise-domains {
+  color: var(--text);
+}
+.hero-expertise-domains i {
+  width: 2px;
+  height: 2px;
+  background: var(--accent);
 }
 .hero-role {
   font-size: clamp(18px, 1.85vw, 29px);
@@ -1174,51 +1234,6 @@ main,
 .not-found a {
   margin-top: 35px;
 }
-@keyframes shutter-release {
-  0% {
-    clip-path: inset(0 0 0 0);
-  }
-  100% {
-    clip-path: inset(0 0 100% 0);
-    visibility: hidden;
-  }
-}
-@keyframes entry-mark-resolve {
-  from {
-    opacity: 0;
-    filter: blur(13px);
-    transform: scale(0.92);
-  }
-  to {
-    opacity: 1;
-    filter: blur(0);
-    transform: scale(1);
-  }
-}
-@keyframes entry-code-resolve {
-  0% {
-    opacity: 0;
-    clip-path: inset(0 100% 0 0);
-  }
-  100% {
-    opacity: 1;
-    clip-path: inset(0 0 0 0);
-  }
-}
-@keyframes entry-scan {
-  0% {
-    opacity: 0;
-    transform: scaleY(0);
-  }
-  35% {
-    opacity: 1;
-    transform: scaleY(1);
-  }
-  100% {
-    opacity: 0;
-    transform: scaleY(1) translateX(32vw);
-  }
-}
 @keyframes scroll-tick {
   0%,
   100% {
@@ -1765,8 +1780,15 @@ main,
     transition: none !important;
     scroll-behavior: auto !important;
   }
-  .entry-shutter {
+  .glyph-slice,
+  .glyph-code,
+  .identity-scan {
     display: none;
+  }
+  .glyph-face,
+  .identity-period {
+    opacity: 1 !important;
+    transform: none !important;
   }
   .hero-wordmark,
   .hero-role,

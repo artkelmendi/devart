@@ -25,7 +25,7 @@ export default function RootLayout({
           hidden
           dangerouslySetInnerHTML={{
             __html:
-              '<!-- THESIS: devart., software engineering as a quiet flowing binary environment. OWN-WORLD: Near-black, silver-white, a warm orange accent; lowercase Manrope identity with heavier art and Geist prose. STORY: Identity, systems and 5G engineering, real work with technical detail, practice, person, conversation. FIRST VIEWPORT: Large devart. at left with software engineer underneath, binary volume at right, direct work and contact actions. FORM: User-pinned digital system with authored system-assembly motion. FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, and DESIGN.md -->',
+              '<!-- THESIS: Code becomes identity: devart. assembles from binary fragments and sends a pulse into a flowing binary environment. OWN-WORLD: Near-black, silver-white, warm orange; lowercase terminal identity with heavier art, Manrope headings and Geist prose. STORY: Identity, systems and 5G engineering, real work, practice, person, conversation. FIRST VIEWPORT: Wordmark at left, software engineer underneath, binary volume at right; direct work and contact actions with a small replay control. FORM: User-pinned digital system with finite sliced-letter assembly; readable content and native scrolling throughout. FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, and DESIGN.md -->',
           }}
         />
         {children}
