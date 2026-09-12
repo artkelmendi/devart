@@ -27,7 +27,7 @@ const navigation = [
   ['About', 'about'],
   ['Contact', 'contact'],
 ];
-const deploymentBase = import.meta.env.BASE_URL.replace(/\/$/, '');
+const deploymentBase = import.meta.env.VITE_DEPLOYMENT_BASE ?? '';
 
 function Wordmark() {
   return (

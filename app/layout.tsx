@@ -3,7 +3,7 @@ import './globals.css';
 import SmoothScroll from '@/components/SmoothScroll';
 
 export const dynamic = 'force-static';
-const deploymentBase = import.meta.env.BASE_URL.replace(/\/$/, '');
+const deploymentBase = import.meta.env.VITE_DEPLOYMENT_BASE ?? '';
 
 export const metadata: Metadata = {
   title: 'devart. — Software Engineer',

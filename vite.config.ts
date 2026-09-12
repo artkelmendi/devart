@@ -46,7 +46,12 @@ export default defineConfig(async () => {
   const { cloudflare } = await import('@cloudflare/vite-plugin');
 
   return {
-    base: isGitHubPages ? '/devart/' : '/',
+    base: '/',
+    define: {
+      'import.meta.env.VITE_DEPLOYMENT_BASE': JSON.stringify(
+        isGitHubPages ? '/devart' : '',
+      ),
+    },
     css: { postcss: { plugins: [tailwindcss()] } },
     server: isCodexSeatbeltSandbox
       ? { watch: { useFsEvents: false, usePolling: true } }

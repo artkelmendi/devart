@@ -3,7 +3,7 @@ import { ArrowUpRight, ArrowLeft, ArrowRight } from 'lucide-react';
 import { projects } from '@/lib/projects';
 import MotionSystem from '@/components/MotionSystem';
 
-const deploymentBase = import.meta.env.BASE_URL.replace(/\/$/, '');
+const deploymentBase = import.meta.env.VITE_DEPLOYMENT_BASE ?? '';
 
 export default function ProjectCase({ slug }: { slug: string }) {
   const index = projects.findIndex((project) => project.slug === slug);

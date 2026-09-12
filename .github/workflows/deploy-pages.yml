@@ -29,7 +29,10 @@ jobs:
       - run: npm ci
       - run: npm run build:pages
       - name: Preserve generated assets
-        run: touch dist/client/.nojekyll
+        run: |
+          mv dist/client/devart/_next dist/client/_next
+          rmdir dist/client/devart
+          touch dist/client/.nojekyll
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
