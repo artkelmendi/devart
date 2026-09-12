@@ -1835,6 +1835,16 @@ main,
 
 html.lenis { scroll-behavior: auto; }
 
+.pointer-halo { position: fixed; top: 0; left: 0; z-index: 95; pointer-events: none; opacity: 0; transition: opacity .18s; }
+.pointer-halo[data-visible="true"] { opacity: 1; }
+.pointer-halo > span { position: absolute; width: 34px; height: 34px; left: -17px; top: -17px; border: 1px solid #db783e75; border-radius: 50%; transition: transform .22s ease, border-color .22s, background .22s; }
+.pointer-halo > span::before, .pointer-halo > span::after { content: ''; position: absolute; background: #db783e; width: 5px; height: 1px; top: 15px; }
+.pointer-halo > span::before { left: -3px; }
+.pointer-halo > span::after { right: -3px; }
+.pointer-halo[data-active="true"] > span { transform: scale(.68); border-color: #db783e; background: #db783e12; }
+.pointer-halo[data-pressed="true"] > span { transform: scale(.45); border-color: #f09a5f; }
+@media (hover: none), (pointer: coarse), (prefers-reduced-motion: reduce), (forced-colors: active) { .pointer-halo { display: none; } }
+
 /* A quiet data rail, retaining native drag and keyboard behavior. */
 html {
   scrollbar-width: thin;

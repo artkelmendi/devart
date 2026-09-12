@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import SmoothScroll from '@/components/SmoothScroll';
+import PointerHalo from '@/components/PointerHalo';
 
 export const dynamic = 'force-static';
 const deploymentBase = import.meta.env.VITE_DEPLOYMENT_BASE ?? '';
@@ -26,6 +27,7 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <SmoothScroll />
+        <PointerHalo />
         <div
           hidden
           dangerouslySetInnerHTML={{
