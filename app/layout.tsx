@@ -1,11 +1,15 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import SmoothScroll from '@/components/SmoothScroll';
+
+export const dynamic = 'force-static';
+const deploymentBase = import.meta.env.BASE_URL.replace(/\/$/, '');
 
 export const metadata: Metadata = {
   title: 'devart. — Software Engineer',
   description:
     'Art Kelmendi is a software engineer building software, web applications, and carefully crafted frontend experiences. Explore the work and the engineering behind it.',
-  icons: { icon: '/favicon.svg' },
+  icons: { icon: `${deploymentBase}/favicon.svg` },
   openGraph: {
     title: 'devart. — Software Engineer',
     description:
@@ -21,6 +25,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
+        <SmoothScroll />
         <div
           hidden
           dangerouslySetInnerHTML={{

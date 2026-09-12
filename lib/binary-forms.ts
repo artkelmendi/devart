@@ -1,9 +1,9 @@
 export type BinaryPoint = { x: number; y: number };
 export type BinaryForm = { points: BinaryPoint[]; aspect: number };
 
-export const MORPH_CYCLE = 22;
+export const MORPH_CYCLE = 27;
 export const MORPH_START = 5.5;
-export const MORPH_END = 17.75;
+export const MORPH_END = 24;
 
 function settle(value: number) {
   const t = Math.max(0, Math.min(1, value));
@@ -15,8 +15,7 @@ export function sampleBinaryMorph(time: number) {
   const phase = ((time % MORPH_CYCLE) + MORPH_CYCLE) % MORPH_CYCLE;
   return {
     amount:
-      settle((phase - MORPH_START) / 2.5) * (1 - settle((phase - 14.8) / 2.6)),
-    code: settle((phase - 10.8) / 1.8),
+      settle((phase - MORPH_START) / 2.5) * (1 - settle((phase - 21) / 2.6)),
   };
 }
 

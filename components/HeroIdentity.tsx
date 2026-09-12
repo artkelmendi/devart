@@ -39,6 +39,7 @@ export default function HeroIdentity({
       context = gsap.context(() => {
         const sequence = gsap.timeline({
           paused: true,
+          delay: location.hash ? 0 : 0.9,
           onStart: () => setRunning(true),
           onComplete: () => {
             setRunning(false);
@@ -76,23 +77,23 @@ export default function HeroIdentity({
             sequence.fromTo(
               slice,
               {
-                xPercent: [38, -26, 22, -34][band],
-                yPercent: (band - 1.5) * 9,
+                xPercent: [10, 7, 4, 1][band],
+                yPercent: 0,
                 opacity: 0,
               },
               {
                 xPercent: 0,
                 yPercent: 0,
                 opacity: 1,
-                duration: 0.78,
+                duration: 0.9,
                 ease: 'power3.out',
               },
-              start + 0.22 + band * 0.045,
+              start + 0.22 + band * 0.025,
             );
           });
           sequence
-            .set(face, { opacity: 1 }, start + 1.14)
-            .set(slices, { opacity: 0 }, start + 1.14);
+            .to(face, { opacity: 1, duration: 0.14, ease: 'none' }, start + 1.2)
+            .set(slices, { opacity: 0 }, start + 1.34);
         });
 
         sequence.fromTo(

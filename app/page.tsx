@@ -1,7 +1,8 @@
 'use client';
 
+export const dynamic = 'force-static';
+
 import { useEffect, useRef, useState } from 'react';
-import Link from 'next/link';
 import Image from 'next/image';
 import {
   ArrowDown,
@@ -17,6 +18,7 @@ import {
 import BinaryField from '@/components/BinaryField';
 import MotionSystem from '@/components/MotionSystem';
 import HeroIdentity from '@/components/HeroIdentity';
+import EntryIntro from '@/components/EntryIntro';
 import { projects } from '@/lib/projects';
 
 const navigation = [
@@ -25,6 +27,7 @@ const navigation = [
   ['About', 'about'],
   ['Contact', 'contact'],
 ];
+const deploymentBase = import.meta.env.BASE_URL.replace(/\/$/, '');
 
 function Wordmark() {
   return (
@@ -219,6 +222,7 @@ export default function Home() {
         onTransformingChange={setTransforming}
         signal={identitySignal}
       />
+      <EntryIntro />
       <MotionSystem />
       <Navigation />
       <main id="main">
@@ -279,7 +283,7 @@ export default function Home() {
                 className="field-transform"
                 disabled={paused || reducedMotion || transforming}
                 onClick={() => setTransform((value) => value + 1)}
-                aria-label="Transform the binary circle into text and code"
+                aria-label="Transform the binary circle into a code symbol"
               >
                 <span aria-hidden="true">+</span>
                 {transforming ? 'Transforming' : 'Transform'}
@@ -334,7 +338,7 @@ export default function Home() {
               <article className="project-row" key={project.slug}>
                 <div className="project-info">
                   <h3>
-                    <Link href={`/work/${project.slug}`}>{project.name}</Link>
+                    <a href={`${deploymentBase}/work/${project.slug}`}>{project.name}</a>
                   </h3>
                   <p className="project-category">{project.category}</p>
                   <p className="project-summary">{project.summary}</p>
@@ -346,14 +350,14 @@ export default function Home() {
                       <li key={tech}>{tech}</li>
                     ))}
                   </ul>
-                  <Link href={`/work/${project.slug}`} className="project-link">
+                  <a href={`${deploymentBase}/work/${project.slug}`} className="project-link">
                     Explore the project
                     <ArrowUpRight size={20} />
-                  </Link>
+                  </a>
                 </div>
-                <Link
+                <a
                   className={`project-preview preview-${project.slug}`}
-                  href={`/work/${project.slug}`}
+                  href={`${deploymentBase}/work/${project.slug}`}
                   aria-label={`Explore ${project.name}`}
                 >
                   <div className="preview-topline" aria-hidden="true">
@@ -373,7 +377,7 @@ export default function Home() {
                   <div className="preview-image">
                     <Image
                       unoptimized
-                      src={project.image}
+                      src={`${deploymentBase}${project.image}`}
                       alt={`${project.name} website homepage`}
                       width="1440"
                       height="1000"
@@ -384,7 +388,7 @@ export default function Home() {
                   <span className="preview-action" aria-hidden="true">
                     <ArrowUpRight size={26} />
                   </span>
-                </Link>
+                </a>
               </article>
             ))}
           </div>
@@ -470,11 +474,17 @@ export default function Home() {
               Behind devart<span className="heading-dot">.</span>
             </h2>
             <span className="about-name">Art Kelmendi / Software engineer</span>
-            <div className="about-mark" aria-hidden="true">
-              <span>dev</span>
-              <span>
-                art<span className="brand-period">.</span>
-              </span>
+            <div className="about-identity">
+              <span className="about-identity-index">01 / THE PERSON BEHIND THE CODE</span>
+              <div className="about-signature" aria-label="devart.">
+                dev<strong>art</strong><span>.</span>
+              </div>
+              <div className="about-identity-rule" aria-hidden="true" />
+              <dl className="about-identity-details">
+                <div><dt>Foundation</dt><dd>C / C++ / 5G systems</dd></div>
+                <div><dt>Expression</dt><dd>Software &amp; interfaces</dd></div>
+              </dl>
+              <span className="about-identity-note">Built with intent. Refined with care.</span>
             </div>
           </div>
           <div className="about-copy">

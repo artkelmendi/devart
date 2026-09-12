@@ -1,6 +1,8 @@
 'use client';
 
 import { useLayoutEffect } from 'react';
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 type MotionSystemProps = { scope?: 'home' | 'case' };
 
@@ -12,8 +14,8 @@ export default function MotionSystem({ scope = 'home' }: MotionSystemProps) {
     let disposed = false;
     let cleanup: (() => void) | undefined;
 
-    void Promise.all([import('gsap'), import('gsap/ScrollTrigger')])
-      .then(([{ gsap }, { ScrollTrigger }]) => {
+    // Initialize before paint so visible content never resets after a late import.
+    try {
         if (disposed) return;
         gsap.registerPlugin(ScrollTrigger);
         document.documentElement.classList.add('motion-enhanced');
@@ -22,7 +24,7 @@ export default function MotionSystem({ scope = 'home' }: MotionSystemProps) {
           const ease = 'power4.out';
 
           if (scope === 'home') {
-            const intro = gsap.timeline();
+            const intro = gsap.timeline({ delay: location.hash ? 0 : 0.9 });
             intro
               .fromTo(
                 '.site-header > *',
@@ -40,10 +42,9 @@ export default function MotionSystem({ scope = 'home' }: MotionSystemProps) {
               )
               .fromTo(
                 '.binary-field',
-                { opacity: 0.15, scale: 0.94 },
+                { opacity: 0.15 },
                 {
                   opacity: 1,
-                  scale: 1,
                   duration: 1.8,
                   ease,
                 },
@@ -148,11 +149,11 @@ export default function MotionSystem({ scope = 'home' }: MotionSystemProps) {
                 timeline.fromTo(
                   preview,
                   {
-                    clipPath: 'polygon(9% 0, 9% 0, 0 100%, 0 100%)',
+                    clipPath: 'inset(0 0 100% 0 round 10px)',
                     filter: 'blur(7px)',
                   },
                   {
-                    clipPath: 'polygon(9% 0, 100% 0, 100% 100%, 0 100%)',
+                    clipPath: 'inset(0 0 0% 0 round 10px)',
                     filter: 'blur(0px)',
                     duration: 0.86,
                     ease,
@@ -275,13 +276,11 @@ export default function MotionSystem({ scope = 'home' }: MotionSystemProps) {
                 },
               )
               .fromTo(
-                '.about-mark > span',
-                { opacity: 0, filter: 'blur(12px)', rotation: -6, scale: 0.9 },
+                '.about-identity > *',
+                { opacity: 0, clipPath: 'inset(0 100% 0 0)' },
                 {
                   opacity: 1,
-                  filter: 'blur(0px)',
-                  rotation: 0,
-                  scale: 1,
+                  clipPath: 'inset(0 0% 0 0)',
                   duration: 0.8,
                   stagger: 0.09,
                   ease,
@@ -469,10 +468,9 @@ export default function MotionSystem({ scope = 'home' }: MotionSystemProps) {
           ScrollTrigger.getAll().forEach((trigger) => trigger.kill());
           document.documentElement.classList.remove('motion-enhanced');
         };
-      })
-      .catch(() => {
+      } catch {
         document.documentElement.classList.remove('motion-enhanced');
-      });
+      }
 
     const handlePreference = () => {
       if (!reduceMotion.matches) return;

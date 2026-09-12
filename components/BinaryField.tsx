@@ -105,7 +105,6 @@ export default function BinaryField({
     const particleOrder = Array.from({ length: 800 }, (_, index) => index).sort(
       (a, b) => particles[a].a - particles[b].a,
     );
-    let wordForm = makeBinaryForm('ENGINEER', particleOrder);
     let codeForm = makeBinaryForm('</>', particleOrder);
     const projected: ProjectedGlyph[] = [];
     const atlas = document.createElement('canvas');
@@ -191,6 +190,21 @@ export default function BinaryField({
       y: height * (isSmall ? 0.47 : 0.49),
     });
 
+    // Hit testing follows the sculpture as it moves from orbit to code.
+    function interactionGeometry() {
+      const circle = fieldGeometry();
+      const amount = reducedMotion ? 0 : sampleBinaryMorph(morphClock).amount *
+        Math.max(0, 1 - scroll / (height * 0.65));
+      const codeWidth = Math.min(formWidth, formMaxHeight * codeForm.aspect);
+      return {
+        ...circle,
+        x: circle.x + (formX + pointerX * 18 - circle.x) * amount,
+        y: circle.y + (formY - scroll + pointerY * 14 - circle.y) * amount,
+        rx: circle.base * 1.3 * (1 - amount) + (codeWidth * 0.58 + 20) * amount,
+        ry: circle.base * 1.2 * (1 - amount) + (codeWidth / codeForm.aspect * 0.65 + 20) * amount,
+      };
+    }
+
     function overField(x: number, y: number, target: EventTarget | null) {
       if (!(target instanceof Element) || !target.closest('#top')) return false;
       if (
@@ -201,19 +215,18 @@ export default function BinaryField({
         return false;
       if (y + window.scrollY < heroTop || y + window.scrollY > heroBottom)
         return false;
-      const geometry = fieldGeometry();
+      const geometry = interactionGeometry();
       return (
-        x > width * (isSmall ? 0.5 : 0.53) &&
         Math.hypot(
-          (x - geometry.x) / (geometry.base * 1.3),
-          (y - geometry.y) / (geometry.base * 1.2),
+          (x - geometry.x) / geometry.rx,
+          (y - geometry.y) / geometry.ry,
         ) < 1
       );
     }
 
     function sendPulse(x?: number, y?: number) {
       if (!canAnimate()) return;
-      const geometry = fieldGeometry();
+      const geometry = interactionGeometry();
       // Store viewport-relative origins so an in-flight pulse survives resize.
       pulses.push({
         x: (x ?? geometry.x - geometry.base * 0.6) / width,
@@ -271,11 +284,12 @@ export default function BinaryField({
         heroPresence > 0 &&
         morphPhase >= MORPH_START &&
         morphPhase < MORPH_END;
-      const wordWidth = Math.min(formWidth, formMaxHeight * wordForm.aspect);
       const codeWidth = Math.min(
-        formWidth * 0.48,
+        formWidth,
         formMaxHeight * codeForm.aspect,
       );
+      // Each expansion/contraction takes five seconds, with no abrupt size steps.
+      const breathingScale = 0.9 + 0.1 * Math.cos((morphClock - MORPH_START - 2.5) * Math.PI / 5);
       while (pulses.length && elapsed - pulses[0].started > 1.35)
         pulses.shift();
 
@@ -297,7 +311,7 @@ export default function BinaryField({
           const angle = particle.a + flow * particle.speed;
           const morph = shapeVisible
             ? sampleBinaryMorph(morphClock - particle.depth * 0.3)
-            : { amount: 0, code: 0 };
+            : { amount: 0 };
           formAmount = morph.amount * heroPresence;
           const tube = particle.b + Math.sin(angle * 2 + elapsed * 0.06) * 0.21;
           // A gently deformed torus creates open space at its core and a readable elliptical silhouette.
@@ -322,13 +336,32 @@ export default function BinaryField({
           alpha = (0.16 + depth * 0.61) * fade * pageAttenuation;
           glyphSize = (14 + depth * 8.5) * (isSmall ? 0.85 : 1);
 
+          if (formAmount > 0) {
+            const code = codeForm.points[index];
+            const localCodeX = code.x * codeWidth * breathingScale;
+            const localCodeY = code.y * (codeWidth / codeForm.aspect) * breathingScale;
+            const codeLeanX = Math.max(-1, Math.min(1, (focusX - formX) / base)) * focus;
+            const codeLeanY = Math.max(-1, Math.min(1, (focusY - formY + scroll) / base)) * focus;
+            const targetDepth = (particle.depth - 0.5) * base * 0.07 - localCodeX * codeLeanX * 0.18;
+            const targetX = formX + localCodeX + targetDepth * codeLeanX * 0.16;
+            const targetY = formY - scroll + localCodeY + targetDepth * codeLeanY * 0.2;
+            const arc = Math.sin(formAmount * Math.PI) * base * 0.09;
+            x += (targetX + pointerX * 18 - x) * formAmount + Math.cos(particle.a) * arc;
+            y += (targetY + pointerY * 14 - y) * formAmount + Math.sin(particle.a) * arc;
+            z += (targetDepth - z) * formAmount;
+            const targetSize = Math.max(8, Math.min(19, codeWidth / 27)) * breathingScale;
+            glyphSize += (targetSize - glyphSize) * formAmount;
+            alpha +=
+              ((0.72 + particle.depth * 0.18) * pageAttenuation - alpha) *
+              formAmount;
+          }
           // A small local pressure field parts the digits without breaking the orbit.
-          if (focus > 0.001 && formAmount < 0.99) {
+          if (focus > 0.001) {
             const dx = x - focusX;
             const dy = y - focusY;
             const distance = Math.hypot(dx, dy);
             const proximity = Math.max(0, 1 - distance / influenceRadius);
-            const pressure = proximity * proximity * focus * (1 - formAmount);
+            const pressure = proximity * proximity * focus;
             const displacement = pressure * (12 + depth * 14);
             x += (dx / Math.max(distance, 1)) * displacement;
             y += (dy / Math.max(distance, 1)) * displacement;
@@ -345,7 +378,7 @@ export default function BinaryField({
             const front = age * base * 2.35;
             const band = (distance - front) / (base * 0.17);
             const strength =
-              Math.exp(-band * band) * (1 - age / 1.35) * (1 - formAmount);
+              Math.exp(-band * band) * (1 - age / 1.35);
             const displacement = strength * base * 0.095;
             x += (dx / Math.max(distance, 1)) * displacement;
             y += (dy / Math.max(distance, 1)) * displacement;
@@ -354,35 +387,6 @@ export default function BinaryField({
           alpha += excitation * 0.32 * pageAttenuation;
           glyphSize *= 1 + excitation * 0.2;
 
-          if (formAmount > 0) {
-            const word = wordForm.points[index];
-            const code = codeForm.points[index];
-            const targetX =
-              formX +
-              word.x * wordWidth * (1 - morph.code) +
-              code.x * codeWidth * morph.code;
-            const targetY =
-              formY -
-              scroll +
-              word.y * (wordWidth / wordForm.aspect) * (1 - morph.code) +
-              code.y * (codeWidth / codeForm.aspect) * morph.code;
-            // A restrained arc opens the volume before the bits settle into type.
-            const arc = Math.sin(formAmount * Math.PI) * base * 0.09;
-            x +=
-              (targetX + pointerX * 3 - x) * formAmount +
-              Math.cos(particle.a) * arc;
-            y +=
-              (targetY + pointerY * 2 - y) * formAmount +
-              Math.sin(particle.a) * arc;
-            z += (particle.depth * 5 - z) * formAmount;
-            const targetSize =
-              Math.max(7, Math.min(13, wordWidth / 49)) * (1 - morph.code) +
-              Math.max(8, Math.min(17, codeWidth / 20)) * morph.code;
-            glyphSize += (targetSize - glyphSize) * formAmount;
-            alpha +=
-              ((0.72 + particle.depth * 0.18) * pageAttenuation - alpha) *
-              formAmount;
-          }
           if (!normallyVisible) alpha *= formAmount;
         } else if (particle.group === 1) {
           // Two loose, sinuous lateral streams feed the central field. Never vertical rainfall.
@@ -559,7 +563,7 @@ export default function BinaryField({
         formX = (left + right) / 2;
         formY = height * 0.49;
         formWidth = right - left;
-        formMaxHeight = height * 0.25;
+        formMaxHeight = fieldGeometry().base * 1.8;
       }
       releasePointer();
       const pixelBudget = Math.sqrt(3_000_000 / Math.max(1, width * height));
@@ -718,7 +722,6 @@ export default function BinaryField({
     // Refresh only the precomputed masks after the local display font is ready.
     void document.fonts.ready.then(() => {
       if (disposed) return;
-      wordForm = makeBinaryForm('ENGINEER', particleOrder);
       codeForm = makeBinaryForm('</>', particleOrder);
       handleResize();
     });

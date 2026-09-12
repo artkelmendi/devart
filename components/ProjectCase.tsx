@@ -1,30 +1,13 @@
-import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
-import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowUpRight, ArrowLeft, ArrowRight } from 'lucide-react';
 import { projects } from '@/lib/projects';
 import MotionSystem from '@/components/MotionSystem';
 
-type Props = { params: Promise<{ slug: string }> };
-export function generateStaticParams() {
-  return projects.map((project) => ({ slug: project.slug }));
-}
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { slug } = await params;
-  const project = projects.find((project) => project.slug === slug);
-  return {
-    title: project
-      ? `${project.name} — Engineering & Development | devart.`
-      : 'Project not found',
-    description: project?.summary,
-  };
-}
+const deploymentBase = import.meta.env.BASE_URL.replace(/\/$/, '');
 
-export default async function ProjectPage({ params }: Props) {
-  const { slug } = await params;
+export default function ProjectCase({ slug }: { slug: string }) {
   const index = projects.findIndex((project) => project.slug === slug);
-  if (index < 0) notFound();
+  if (index < 0) return null;
   const project = projects[index];
   const next = projects[(index + 1) % projects.length];
   return (
@@ -34,15 +17,15 @@ export default async function ProjectPage({ params }: Props) {
         Skip to content
       </a>
       <header className="case-header">
-        <Link href="/#work" className="quiet-link">
+        <a href={`${deploymentBase}/#work`} className="quiet-link">
           <ArrowLeft size={18} />
           All work
-        </Link>
-        <Link href="/" className="case-signature" aria-label="devart. home">
+        </a>
+        <a href={`${deploymentBase}/`} className="case-signature" aria-label="devart. home">
           <span>dev</span>
           <strong>art</strong>
           <span className="brand-period">.</span>
-        </Link>
+        </a>
         <a
           href={project.url}
           target="_blank"
@@ -75,7 +58,7 @@ export default async function ProjectPage({ params }: Props) {
         <div className="case-image">
           <Image
             unoptimized
-            src={project.image}
+            src={`${deploymentBase}${project.image}`}
             alt={`${project.name} website homepage`}
             width={1440}
             height={1000}
@@ -142,14 +125,14 @@ export default async function ProjectPage({ params }: Props) {
             </div>
           </div>
         </section>
-        <Link className="next-project" href={`/work/${next.slug}`}>
+        <a className="next-project" href={`${deploymentBase}/work/${next.slug}`}>
           <span>Next project</span>
           <strong>{next.name}</strong>
           <ArrowUpRight size={48} />
-        </Link>
+        </a>
       </main>
       <footer className="case-footer">
-        <Link href="/">devart. / Software Engineer</Link>
+        <a href={`${deploymentBase}/`}>devart. / Software Engineer</a>
         <a href="mailto:info@devart.com">
           Start a conversation
           <ArrowUpRight size={16} />

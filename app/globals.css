@@ -665,10 +665,13 @@ main,
   background: #17191c;
   border: 1px solid #ffffff19;
   display: block;
+  border-radius: 10px;
+  overflow: hidden;
   transition: border-color 0.3s;
 }
 .preview-topline {
-  height: 34px;
+  border-bottom: 1px solid #ffffff0d;
+  height: 38px;
   display: flex;
   gap: 18px;
   align-items: center;
@@ -1814,3 +1817,61 @@ main,
   margin-top: 24px;
   margin-bottom: 0;
 }
+
+/* Brief terminal signature, then a single clean reveal of the live hero. */
+.entry-intro { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; background: #0b0d0e; pointer-events: none; animation: entry-exit .55s cubic-bezier(.76,0,.24,1) .85s both; }
+.entry-signature { width: min(250px, 65vw); font-family: Consolas, 'Liberation Mono', monospace; animation: entry-arrive .4s ease-out both; }
+.entry-command { display: block; color: #8b9398; font-size: 11px; margin-bottom: 18px; }
+.entry-name { display: block; color: #e9edeb; font-size: 54px; letter-spacing: -.065em; line-height: 1; }
+.entry-name strong { font-weight: 700; }
+.entry-name > span { color: #db783e; }
+.entry-track { display: block; height: 1px; background: #282c2f; margin: 24px 0 14px; overflow: hidden; }
+.entry-track > span { display: block; height: 100%; background: #db783e; transform-origin: left; animation: entry-progress .8s cubic-bezier(.22,1,.36,1) both; }
+.entry-caption { color: #82898d; font-size: 9px; letter-spacing: .1em; }
+@keyframes entry-arrive { from { opacity: 0; } to { opacity: 1; } }
+@keyframes entry-progress { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes entry-exit { to { clip-path: inset(0 0 100% 0); visibility: hidden; } }
+@media (prefers-reduced-motion: reduce) { .entry-intro { display: none; } }
+
+html.lenis { scroll-behavior: auto; }
+
+/* A quiet data rail, retaining native drag and keyboard behavior. */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: #a66e49 #101315;
+}
+@supports selector(::-webkit-scrollbar) {
+  html { scrollbar-width: auto; scrollbar-color: auto; }
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track {
+    background: #101315;
+    border-left: 1px solid #22272a;
+  }
+  ::-webkit-scrollbar-thumb {
+    min-height: 48px;
+    border: 3px solid #101315;
+    border-radius: 6px;
+    background: #a66e49;
+    background-clip: padding-box;
+  }
+  ::-webkit-scrollbar-thumb:hover { background-color: #db783e; }
+  ::-webkit-scrollbar-thumb:active { background-color: #f09a5f; }
+  ::-webkit-scrollbar-corner { background: #101315; }
+}
+@media (forced-colors: active) {
+  html { scrollbar-color: auto; scrollbar-width: auto; }
+  ::-webkit-scrollbar-thumb { background: ButtonText; }
+  ::-webkit-scrollbar-track { background: Canvas; }
+}
+
+.about-identity { margin-top: 48px; max-width: 410px; padding: 26px 0 24px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.about-identity-index { display: block; font: 9px/1.6 Consolas, monospace; letter-spacing: .12em; color: #969da2; }
+.about-signature { display: flex; align-items: baseline; margin: 30px 0; font: 400 clamp(48px, 5.8vw, 82px)/1 Consolas, 'Liberation Mono', monospace; letter-spacing: -.065em; color: var(--text); }
+.about-signature strong { font-weight: 700; }
+.about-signature > span { color: var(--accent); margin-left: -.1em; }
+.about-identity-rule { width: 32px; height: 2px; background: var(--accent); margin-bottom: 26px; }
+.about-identity-details { margin: 0; display: grid; gap: 14px; font-size: 12px; }
+.about-identity-details > div { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 14px; }
+.about-identity-details dt { color: var(--muted); }
+.about-identity-details dd { margin: 0; color: var(--text); }
+.about-identity-note { display: block; margin-top: 25px; font-size: 11px; color: #969da2; }
